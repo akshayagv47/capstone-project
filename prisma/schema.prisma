@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  CLIENT
+}
+
+enum ApiKeyStatus {
+  ACTIVE
+  REVOKED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(CLIENT)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  apiKeys      ApiKey[]
+  apiLogs      ApiLog[]
+}
+
+model ApiKey {
+  id         String       @id @default(cuid())
+  userId     String
+  key        String       @unique
+  secretHash String
+  status     ApiKeyStatus @default(ACTIVE)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  lastUsedAt DateTime?
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  apiLogs    ApiLog[]
+
+  @@index([userId])
+}
+
+model ApiLog {
+  id             String   @id @default(cuid())
+  apiKeyId       String
+  userId         String
+  endpoint       String
+  method         String
+  statusCode     Int
+  responseTimeMs Int
+  ipAddress      String?
+  createdAt      DateTime @default(now())
+
+  apiKey         ApiKey   @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([apiKeyId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// ============================================
+// BACKEND DEV 1 DATA MODELS (GEOGRAPHY DATA)
+// ============================================
+
+model Country {
+  id     String  @id @default(uuid())
+  name   String  @unique
+  states State[]
+}
+
+model State {
+  id        String     @id @default(uuid())
+  name      String
+  code      Int        @unique
+  countryId String
+  country   Country    @relation(fields: [countryId], references: [id])
+  districts District[]
+}
+
+model District {
+  id           String        @id @default(uuid())
+  name         String
+  code         Int           @unique
+  stateId      String
+  state        State         @relation(fields: [stateId], references: [id])
+  subDistricts SubDistrict[]
+}
+
+model SubDistrict {
+  id         String    @id @default(uuid())
+  name       String
+  code       Int       @unique
+  districtId String
+  district   District  @relation(fields: [districtId], references: [id])
+  villages   Village[]
+}
+
+model Village {
+  id            String      @id @default(uuid())
+  name          String
+  code          Int         @unique
+  subDistrictId String
+  subDistrict   SubDistrict @relation(fields: [subDistrictId], references: [id])
+}
