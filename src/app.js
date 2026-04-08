@@ -20,6 +20,21 @@ app.use(morgan("dev"));
 // Apply general rate limit to all routes
 app.use(generalLimiter);
 
+app.get("/", (_req, res) => {
+  res.status(200).json({
+    ok: true,
+    service: "capstone-backend",
+    message: "API is running. Use /health and /api endpoints.",
+    endpoints: {
+      health: "/health",
+      register: "/api/auth/register",
+      login: "/api/auth/login",
+      protectedPing: "/api/protected/ping",
+      b2bPing: "/api/b2b/ping",
+    },
+  });
+});
+
 app.get("/health", (_req, res) => {
   res.status(200).json({ ok: true, service: "capstone-backend" });
 });
