@@ -1,10 +1,11 @@
 const express = require("express");
 const prisma = require("../lib/prisma");
+const { cacheMiddleware } = require("../middleware/redisCache");
 
 const router = express.Router();
 
 // 1. Get all states
-router.get("/states", async (req, res, next) => {
+router.get("/states", cacheMiddleware(3600), async (req, res, next) => {
   try {
     const states = await prisma.state.findMany({
       orderBy: { name: 'asc' },
@@ -17,7 +18,7 @@ router.get("/states", async (req, res, next) => {
 });
 
 // 2. Get districts by state
-router.get("/states/:stateId/districts", async (req, res, next) => {
+router.get("/states/:stateId/districts", cacheMiddleware(3600), async (req, res, next) => {
   try {
     const { stateId } = req.params;
     const districts = await prisma.district.findMany({

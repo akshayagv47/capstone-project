@@ -5,3 +5,4 @@ node_modules
 /generated/prisma
 india_villages_clean.csv
 *.log
+.vercel

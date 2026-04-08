@@ -50,7 +50,6 @@ app.use(
   requireApiCredentials,
   b2bApiLimiter,
   apiLogger,
-  cacheMiddleware(3600),
   locationRoutes
 );
 

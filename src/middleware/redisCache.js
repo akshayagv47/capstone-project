@@ -6,8 +6,8 @@ const redis = require("../lib/redis");
  */
 function cacheMiddleware(durationInSeconds = 300) {
   return async (req, res, next) => {
-    // If Redis is not connected or method is not GET, skip caching
-    if (!redis || req.method !== "GET") {
+    // Skip cache when Redis is unavailable or still reconnecting
+    if (!redis || req.method !== "GET" || redis.status !== "ready") {
       return next();
     }
 
@@ -29,10 +29,12 @@ function cacheMiddleware(durationInSeconds = 300) {
       const originalJson = res.json.bind(res);
       
       res.json = (body) => {
-        // Save stringified JSON to Redis with Expiry (TTL) asynchronously
-        redis.setex(key, durationInSeconds, JSON.stringify(body)).catch(err => {
-          console.error("Redis setex error:", err);
-        });
+        // Cache only successful responses to avoid storing transient/server errors.
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          redis.setex(key, durationInSeconds, JSON.stringify(body)).catch(err => {
+            console.error("Redis setex error:", err);
+          });
+        }
 
         // Continue sending the response to the user
         return originalJson(body);
