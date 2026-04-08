@@ -9,7 +9,9 @@
     "postinstall": "prisma generate",
     "prisma:generate": "npx prisma generate",
     "prisma:migrate": "npx prisma migrate dev --name init_auth_step1",
-    "seed": "node src/scripts/importData.js"
+    "seed": "node src/scripts/importData.js",
+    "test:task4": "node src/scripts/task4ApiValidation.js",
+    "monitor:health": "node src/scripts/monitorHealth.js"
   },
   "keywords": [],
   "author": "",
