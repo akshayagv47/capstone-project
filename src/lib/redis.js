@@ -8,7 +8,6 @@ if (env.redisUrl) {
     maxRetriesPerRequest: null,
     connectTimeout: 10000,
     commandTimeout: 2000,
-    // Upstash can reset INFO-based ready checks; skip it and rely on socket readiness.
     enableReadyCheck: false,
     retryStrategy: (times) => Math.min(times * 200, 2000),
   });
@@ -21,7 +20,7 @@ if (env.redisUrl) {
     console.log("Connected to Redis gracefully");
   });
 } else {
-  console.warn("REDIS_URL is missing; Redis caching is disabled and rate limiting stays in memory.");
+  console.warn("REDIS_URL is missing; Redis caching is disabled.");
 }
 
 module.exports = redis;
